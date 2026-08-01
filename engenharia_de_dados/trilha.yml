@@ -56,7 +56,7 @@ modulos:
   introducao-engenharia-dados:
     titulo: "Introducao a engenharia de dados e diagnostico"
     tipo: conteudo
-    status: rascunho
+    status: publicado
     lab: false
 
   sql-joins:

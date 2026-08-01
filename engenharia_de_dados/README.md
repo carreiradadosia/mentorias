@@ -10,7 +10,7 @@ tags: [mentoria, trilha]
 
 > Arquivo gerado a partir do `trilha.yml`. Nao edite a mao: rode `gerar_trilha.py` novamente, senao a edicao se perde e o documento diverge.
 
-8 de 20 modulos publicados.
+9 de 20 modulos publicados.
 
 A ordem abaixo e a recomendada. Ela nao e obrigacao de percurso: cada
 mentorado tem um roteiro proprio, que seleciona e reordena modulos sem
@@ -20,7 +20,7 @@ alterar este repositorio.
 
 | Modulo | Status | Lab |
 |---|---|---|
-| [Introducao a engenharia de dados e diagnostico](modulos/introducao-engenharia-dados/) | rascunho | nao |
+| [Introducao a engenharia de dados e diagnostico](modulos/introducao-engenharia-dados/) | publicado | nao |
 | [SQL com foco em JOINs](modulos/sql-joins/) | publicado | nao |
 | Docker e ambiente local | planejado | sim |
 
