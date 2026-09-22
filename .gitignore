@@ -23,6 +23,7 @@ plugins/
 
 # HTML gerado
 *.html
+!experimentos/*/respostas/**/dashboard.html
 
 # Worktrees locais
 .worktrees/

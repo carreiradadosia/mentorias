@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pacing de campanhas — planejado contra realizado</title>
+<style>
+:root{color-scheme:light dark}
+.viz-root{
+  --plano:#f9f9f7; --superficie:#fcfcfb; --borda:#e4e3df;
+  --ink:#0b0b0b; --ink2:#52514e; --ink3:#77766f;
+  --serie-real:#2a78d6; --serie-plano:#eb6834;
+  --critico:#d03b3b; --grade:#d9d8d3;
+}
+@media (prefers-color-scheme:dark){
+  .viz-root{
+    --plano:#0d0d0d; --superficie:#1a1a19; --borda:#33332f;
+    --ink:#ffffff; --ink2:#c3c2b7; --ink3:#9b9a90;
+    --serie-real:#3987e5; --serie-plano:#d95926;
+    --critico:#d03b3b; --grade:#3a3a36;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plano);color:var(--ink);
+  font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 64px}
+h1{font-size:30px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:20px;margin:40px 0 6px;letter-spacing:-.005em}
+.sub{color:var(--ink2);margin:0 0 4px;font-size:17px}
+.fonte{color:var(--ink3);font-size:13px;margin:6px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px 0 8px}
+.kpi{background:var(--superficie);border:1px solid var(--borda);border-radius:10px;padding:16px}
+.kpi .rot{font-size:13px;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em}
+.kpi .val{font-size:29px;font-weight:650;margin:8px 0 2px;letter-spacing:-.02em}
+.kpi .cmp{font-size:14px;color:var(--ink2)}
+.kpi .base{font-size:12px;color:var(--ink3);margin-top:8px}
+.card{background:var(--superficie);border:1px solid var(--borda);border-radius:10px;
+  padding:18px 18px 12px;margin-top:12px;overflow-x:auto}
+.gr{width:100%;height:auto;display:block}
+.barra{fill:var(--serie-real)} .barra-destaque{fill:var(--critico)}
+.serie-real{fill:var(--serie-real)} .serie-plano{fill:var(--serie-plano)}
+.mark:hover rect{stroke:var(--superficie);stroke-width:2px}
+.ref{stroke:var(--ink3);stroke-width:2;stroke-dasharray:5 4}
+.rotulo-cat{fill:var(--ink2);font-size:14px}
+.rotulo-ref{fill:var(--ink3);font-size:12px}
+.valor{fill:var(--ink);font-size:15px;font-weight:600}
+.valor-min{fill:var(--ink2);font-size:12px}
+.leg{display:flex;gap:18px;align-items:center;margin:2px 0 12px;font-size:14px;color:var(--ink2)}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:6px;
+  vertical-align:-1px}
+.imp{font-size:15px;color:var(--ink2);margin:10px 0 0}
+input[type=search]{width:100%;padding:11px 13px;font-size:15px;border-radius:8px;
+  border:1px solid var(--borda);background:var(--superficie);color:var(--ink);margin:12px 0 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:10px}
+th,td{padding:8px 9px;border-bottom:1px solid var(--borda);text-align:left;white-space:nowrap}
+th{cursor:pointer;color:var(--ink2);font-size:12px;text-transform:uppercase;
+  letter-spacing:.05em;position:sticky;top:0;background:var(--superficie)}
+th:hover,th:focus{color:var(--ink)}
+td:nth-child(n+5):nth-child(-n+8){text-align:right;font-variant-numeric:tabular-nums}
+.nota{background:var(--superficie);border:1px solid var(--borda);border-left:3px solid var(--ink3);
+  border-radius:8px;padding:14px 16px;margin-top:12px;font-size:15px;color:var(--ink2)}
+.nota strong{color:var(--ink)}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--borda);
+  color:var(--ink3);font-size:13px}
+code{font-size:12.5px}
+@media (max-width:700px){
+  .kpis{grid-template-columns:1fr}
+  h1{font-size:24px}
+  .wrap{padding:18px 14px 48px}
+}
+</style>
+</head>
+<body class="viz-root">
+<div class="wrap">
+
+<h1>O dinheiro planejado foi entregue quase na régua, e rendeu mais mídia do que o plano previa</h1>
+<p class="sub">A pergunta: entregamos o que tinha sido planejado? Em dinheiro sim, com pacing de
+100,75%. A mesma verba comprou
+21,70% mais impressões do que o plano previa. O único
+desvio material é o Tiktok Ads.</p>
+<p class="fonte">Base: BASE DE PACING_v2.csv.xls. Plano de 45 flights,
+16764 dias de entrega registrados, dos quais
+884 caem dentro de alguma janela contratada.</p>
+
+<div class="kpis"><div class="kpi"><div class="rot">Pacing de investimento</div><div class="val">100,75%</div><div class="cmp">R$ 1.041.385,17 entregues contra R$ 1.033.625,08 planejados</div><div class="base">884 dias de entrega dentro do plano</div></div><div class="kpi"><div class="rot">Pacing de impressões</div><div class="val">121,70%</div><div class="cmp">29.749.424 impressões acima do plano</div><div class="base">884 dias de entrega dentro do plano</div></div><div class="kpi"><div class="rot">Pacing de cliques</div><div class="val">47,32%</div><div class="cmp">100,46% sem o flight de CTR atípico</div><div class="base">884 dias de entrega dentro do plano</div></div><div class="kpi"><div class="rot">Plano sem entrega</div><div class="val">R$ 24.797,50</div><div class="cmp">1 flight do plano sem nenhum dia entregue</div><div class="base">45 flights planejados</div></div></div>
+
+<h2>Em dinheiro o plano fechou no ponto, e a entrega de mídia superou o previsto</h2>
+<div class="card"><svg viewBox="0 0 760 190" role="img" class="gr" preserveAspectRatio="xMinYMin meet"><line x1="548.0" y1="4" x2="548.0" y2="182" class="ref"/><text x="548.0" y="190" class="rotulo-ref" text-anchor="middle">plano = 100%</text><g class="mark"><title>Investimento: 100,75%. R$ 1.041.385,17 de R$ 1.033.625,08</title><text x="156" y="43.0" class="rotulo-cat" text-anchor="end">Investimento</text><rect x="168" y="16" width="382.9" height="44" rx="4" class="barra"/><text x="560.9" y="43.0" class="valor">100,75%</text></g><g class="mark"><title>Impressões: 121,70%. 166.872.507 de 137.123.083</title><text x="156" y="101.0" class="rotulo-cat" text-anchor="end">Impressões</text><rect x="168" y="74" width="462.5" height="44" rx="4" class="barra"/><text x="640.5" y="101.0" class="valor">121,70%</text></g><g class="mark"><title>Cliques: 47,32%. denominador derivado de premissa de CTR, não é meta contratada</title><text x="156" y="159.0" class="rotulo-cat" text-anchor="end">Cliques</text><rect x="168" y="132" width="179.8" height="44" rx="4" class="barra"/><text x="357.8" y="159.0" class="valor">47,32%</text></g></svg></div>
+<p class="imp">O pacing de cliques de 47,32% não é déficit de
+entrega. O plano deriva cliques de uma premissa de CTR por flight que vai de
+0,05% a 1,00%. Um único flight concentra
+52,79% dos cliques planejados; sem ele o pacing é
+100,46%.</p>
+
+<h2>O Tiktok Ads entregou menos da metade do que foi planejado</h2>
+<div class="card"><svg viewBox="0 0 760 190" role="img" class="gr" preserveAspectRatio="xMinYMin meet"><line x1="599.8" y1="4" x2="599.8" y2="182" class="ref"/><text x="599.8" y="190" class="rotulo-ref" text-anchor="middle">plano = 100%</text><g class="mark"><title>Tiktok Ads: 47,74%. R$ 47.290,25 de R$ 99.049,83, 57 dias</title><text x="156" y="43.0" class="rotulo-cat" text-anchor="end">Tiktok Ads</text><rect x="168" y="16" width="206.2" height="44" rx="4" class="barra-destaque"/><text x="384.2" y="43.0" class="valor">47,74%</text></g><g class="mark"><title>Meta Ads: 106,99%. R$ 883.743,03 de R$ 825.982,09, 526 dias</title><text x="156" y="101.0" class="rotulo-cat" text-anchor="end">Meta Ads</text><rect x="168" y="74" width="462.0" height="44" rx="4" class="barra"/><text x="640.0" y="101.0" class="valor">106,99%</text></g><g class="mark"><title>Youtube Ads: 107,10%. R$ 116.301,20 de R$ 108.593,16, 301 dias</title><text x="156" y="159.0" class="rotulo-cat" text-anchor="end">Youtube Ads</text><rect x="168" y="132" width="462.5" height="44" rx="4" class="barra"/><text x="640.5" y="159.0" class="valor">107,10%</text></g></svg></div>
+<p class="imp">Tiktok Ads ficou em 47,74% do
+investimento e 24,29% das impressões. Metade da
+diferença vem de um flight só, a campanha Inauguracao, com
+R$ 24.797,50 planejados e nenhum dia de entrega. Meta Ads
+ficou em 106,99% e Youtube Ads em
+107,10%.</p>
+
+<h2>Campanha a campanha, o desvio de verba é pequeno fora das inaugurações</h2>
+<div class="card">
+<div class="leg"><span><span class="sw" style="background:var(--serie-plano)"></span>Planejado</span>
+<span><span class="sw" style="background:var(--serie-real)"></span>Realizado na janela</span>
+<span>valores em R$</span></div>
+<svg viewBox="0 0 760 620" role="img" class="gr" preserveAspectRatio="xMinYMin meet"><text x="156" y="33" class="rotulo-cat" text-anchor="end">Impulsionamentos</text><g class="mark"><title>Impulsionamentos planejado: R$ 169.500,00</title><rect x="168" y="10" width="435.1" height="19" rx="4" class="serie-plano"/><text x="611.1" y="25" class="valor-min">169.500</text></g><g class="mark"><title>Impulsionamentos realizado: R$ 139.302,08. pacing 82,2%</title><rect x="168" y="32" width="357.6" height="19" rx="4" class="serie-real"/><text x="533.6" y="47" class="valor-min">139.302</text></g><text x="156" y="94" class="rotulo-cat" text-anchor="end">Freeshop</text><g class="mark"><title>Freeshop planejado: R$ 130.157,56</title><rect x="168" y="71" width="334.1" height="19" rx="4" class="serie-plano"/><text x="510.1" y="86" class="valor-min">130.158</text></g><g class="mark"><title>Freeshop realizado: R$ 166.957,62. pacing 128,3%</title><rect x="168" y="93" width="428.6" height="19" rx="4" class="serie-real"/><text x="604.6" y="108" class="valor-min">166.958</text></g><text x="156" y="155" class="rotulo-cat" text-anchor="end">Cashback</text><g class="mark"><title>Cashback planejado: R$ 105.640,00</title><rect x="168" y="132" width="271.2" height="19" rx="4" class="serie-plano"/><text x="447.2" y="147" class="valor-min">105.640</text></g><g class="mark"><title>Cashback realizado: R$ 105.637,44. pacing 100,0%</title><rect x="168" y="154" width="271.2" height="19" rx="4" class="serie-real"/><text x="447.2" y="169" class="valor-min">105.637</text></g><text x="156" y="216" class="rotulo-cat" text-anchor="end">Mega Day</text><g class="mark"><title>Mega Day planejado: R$ 101.840,00</title><rect x="168" y="193" width="261.4" height="19" rx="4" class="serie-plano"/><text x="437.4" y="208" class="valor-min">101.840</text></g><g class="mark"><title>Mega Day realizado: R$ 101.840,00. pacing 100,0%</title><rect x="168" y="215" width="261.4" height="19" rx="4" class="serie-real"/><text x="437.4" y="230" class="valor-min">101.840</text></g><text x="156" y="277" class="rotulo-cat" text-anchor="end">Maceio</text><g class="mark"><title>Maceio planejado: R$ 86.367,60</title><rect x="168" y="254" width="221.7" height="19" rx="4" class="serie-plano"/><text x="397.7" y="269" class="valor-min">86.368</text></g><g class="mark"><title>Maceio realizado: R$ 115.817,02. pacing 134,1%</title><rect x="168" y="276" width="297.3" height="19" rx="4" class="serie-real"/><text x="473.3" y="291" class="valor-min">115.817</text></g><text x="156" y="338" class="rotulo-cat" text-anchor="end">Fds1</text><g class="mark"><title>Fds1 planejado: R$ 76.000,00</title><rect x="168" y="315" width="195.1" height="19" rx="4" class="serie-plano"/><text x="371.1" y="330" class="valor-min">76.000</text></g><g class="mark"><title>Fds1 realizado: R$ 76.000,00. pacing 100,0%</title><rect x="168" y="337" width="195.1" height="19" rx="4" class="serie-real"/><text x="371.1" y="352" class="valor-min">76.000</text></g><text x="156" y="399" class="rotulo-cat" text-anchor="end">Feira de Santana</text><g class="mark"><title>Feira de Santana planejado: R$ 53.932,80</title><rect x="168" y="376" width="138.4" height="19" rx="4" class="serie-plano"/><text x="314.4" y="391" class="valor-min">53.933</text></g><g class="mark"><title>Feira de Santana realizado: R$ 50.547,38. pacing 93,7%</title><rect x="168" y="398" width="129.7" height="19" rx="4" class="serie-real"/><text x="305.7" y="413" class="valor-min">50.547</text></g><text x="156" y="460" class="rotulo-cat" text-anchor="end">Uberlandia</text><g class="mark"><title>Uberlandia planejado: R$ 50.789,64</title><rect x="168" y="437" width="130.4" height="19" rx="4" class="serie-plano"/><text x="306.4" y="452" class="valor-min">50.790</text></g><g class="mark"><title>Uberlandia realizado: R$ 50.788,41. pacing 100,0%</title><rect x="168" y="459" width="130.4" height="19" rx="4" class="serie-real"/><text x="306.4" y="474" class="valor-min">50.788</text></g><text x="156" y="521" class="rotulo-cat" text-anchor="end">Oportunidades Incriveis</text><g class="mark"><title>Oportunidades Incriveis planejado: R$ 45.000,00</title><rect x="168" y="498" width="115.5" height="19" rx="4" class="serie-plano"/><text x="291.5" y="513" class="valor-min">45.000</text></g><g class="mark"><title>Oportunidades Incriveis realizado: R$ 45.000,00. pacing 100,0%</title><rect x="168" y="520" width="115.5" height="19" rx="4" class="serie-real"/><text x="291.5" y="535" class="valor-min">45.000</text></g><text x="156" y="582" class="rotulo-cat" text-anchor="end">Joao Pessoa</text><g class="mark"><title>Joao Pessoa planejado: R$ 41.165,80</title><rect x="168" y="559" width="105.7" height="19" rx="4" class="serie-plano"/><text x="281.7" y="574" class="valor-min">41.166</text></g><g class="mark"><title>Joao Pessoa realizado: R$ 42.925,05. pacing 104,3%</title><rect x="168" y="581" width="110.2" height="19" rx="4" class="serie-real"/><text x="286.2" y="596" class="valor-min">42.925</text></g></svg>
+</div>
+<p class="imp">Das 18 campanhas com pacing calculável,
+15 ficaram entre 80% e
+120% do orçado, 1 abaixo e
+2 acima. O resultado agregado não está escondendo extremos que se
+anulam.</p>
+
+<h2>Detalhe por campanha e veículo</h2>
+<p class="imp">Este é o nível em que o pacing é válido. Filtre por campanha, veículo ou data.
+Clique no cabeçalho para ordenar.</p>
+<input type="search" id="busca" placeholder="Filtrar por campanha, veículo ou data"
+ aria-label="Filtrar a tabela de campanhas">
+<div class="card"><table id='tabela'><thead><tr><th tabindex='0' role='button' data-col='0'>Campanha</th><th tabindex='0' role='button' data-col='1'>Veículo</th><th tabindex='0' role='button' data-col='2'>Flights</th><th tabindex='0' role='button' data-col='3'>Início</th><th tabindex='0' role='button' data-col='4'>Término</th><th tabindex='0' role='button' data-col='5'>Planejado R$</th><th tabindex='0' role='button' data-col='6'>Realizado R$</th><th tabindex='0' role='button' data-col='7'>Pacing R$</th><th tabindex='0' role='button' data-col='8'>Pacing impressões</th><th tabindex='0' role='button' data-col='9'>Dias entregues</th></tr></thead><tbody><tr><td>Freeshop</td><td>Meta Ads</td><td>4</td><td>2024-06-17</td><td>2024-07-08</td><td>130.157,56</td><td>166.957,62</td><td>128,3%</td><td>114,1%</td><td>48</td></tr><tr><td>Impulsionamentos</td><td>Meta Ads</td><td>2</td><td>2024-06-01</td><td>2024-07-31</td><td>107.166,67</td><td>103.921,98</td><td>97,0%</td><td>91,5%</td><td>53</td></tr><tr><td>Cashback</td><td>Meta Ads</td><td>2</td><td>2024-05-28</td><td>2024-07-07</td><td>105.640,00</td><td>105.637,44</td><td>100,0%</td><td>96,7%</td><td>18</td></tr><tr><td>Mega Day</td><td>Meta Ads</td><td>2</td><td>2024-06-12</td><td>2024-07-17</td><td>101.840,00</td><td>101.840,00</td><td>100,0%</td><td>60,8%</td><td>16</td></tr><tr><td>Fds1</td><td>Meta Ads</td><td>2</td><td>2024-06-06</td><td>2024-07-07</td><td>76.000,00</td><td>76.000,00</td><td>100,0%</td><td>74,2%</td><td>8</td></tr><tr><td>Impulsionamentos</td><td>Tiktok Ads</td><td>2</td><td>2024-06-01</td><td>2024-07-31</td><td>62.333,33</td><td>35.380,10</td><td>56,8%</td><td>37,1%</td><td>39</td></tr><tr><td>Oportunidades Incriveis</td><td>Meta Ads</td><td>1</td><td>2024-07-05</td><td>2024-07-18</td><td>45.000,00</td><td>45.000,00</td><td>100,0%</td><td>152,2%</td><td>14</td></tr><tr><td>Maceio</td><td>Meta Ads</td><td>2</td><td>2024-06-01</td><td>2024-07-31</td><td>44.787,60</td><td>74.240,53</td><td>165,8%</td><td>230,3%</td><td>59</td></tr><tr><td>Maceio</td><td>Youtube Ads</td><td>2</td><td>2024-06-01</td><td>2024-07-31</td><td>41.580,00</td><td>41.576,49</td><td>100,0%</td><td>96,5%</td><td>56</td></tr><tr><td>Feira de Santana</td><td>Meta Ads</td><td>2</td><td>2024-06-01</td><td>2024-07-31</td><td>27.052,80</td><td>23.671,20</td><td>87,5%</td><td>239,6%</td><td>59</td></tr><tr><td>Feira de Santana</td><td>Youtube Ads</td><td>2</td><td>2024-06-01</td><td>2024-07-31</td><td>26.880,00</td><td>26.876,18</td><td>100,0%</td><td>70,9%</td><td>56</td></tr><tr><td>Cashback Resgate</td><td>Meta Ads</td><td>2</td><td>2024-06-10</td><td>2024-07-31</td><td>26.867,52</td><td>25.004,40</td><td>93,1%</td><td>136,1%</td><td>42</td></tr><tr><td>Uberlandia</td><td>Meta Ads</td><td>2</td><td>2024-06-01</td><td>2024-07-31</td><td>26.826,48</td><td>26.826,42</td><td>100,0%</td><td>267,8%</td><td>61</td></tr><tr><td>Joao Pessoa</td><td>Meta Ads</td><td>2</td><td>2024-06-01</td><td>2024-06-30</td><td>25.676,80</td><td>25.676,79</td><td>100,0%</td><td>165,0%</td><td>57</td></tr><tr><td>Inauguracao</td><td>Tiktok Ads</td><td>1</td><td>2024-07-19</td><td>2024-07-31</td><td>24.797,50</td><td>0,00</td><td>0,0%</td><td>0,0%</td><td>0</td></tr><tr><td>Fds2 Ofertasbr</td><td>Meta Ads</td><td>1</td><td>2024-06-13</td><td>2024-06-16</td><td>24.547,13</td><td>24.547,13</td><td>100,0%</td><td>114,6%</td><td>4</td></tr><tr><td>Fds3 Ofertasbr</td><td>Meta Ads</td><td>1</td><td>2024-06-20</td><td>2024-06-23</td><td>24.547,13</td><td>24.547,13</td><td>100,0%</td><td>186,2%</td><td>4</td></tr><tr><td>Uberlandia</td><td>Youtube Ads</td><td>2</td><td>2024-06-01</td><td>2024-07-31</td><td>23.963,16</td><td>23.961,99</td><td>100,0%</td><td>71,2%</td><td>57</td></tr><tr><td>Fds2</td><td>Meta Ads</td><td>1</td><td>2024-06-13</td><td>2024-06-19</td><td>19.186,20</td><td>19.186,20</td><td>100,0%</td><td>99,1%</td><td>7</td></tr><tr><td>Fds3</td><td>Meta Ads</td><td>1</td><td>2024-06-20</td><td>2024-06-23</td><td>19.186,20</td><td>19.186,20</td><td>100,0%</td><td>68,4%</td><td>4</td></tr><tr><td>Fortaleza</td><td>Meta Ads</td><td>2</td><td>2024-06-01</td><td>2024-07-31</td><td>16.500,00</td><td>16.499,99</td><td>100,0%</td><td>351,8%</td><td>59</td></tr><tr><td>Fortaleza</td><td>Youtube Ads</td><td>2</td><td>2024-06-01</td><td>2024-07-31</td><td>12.600,00</td><td>12.599,12</td><td>100,0%</td><td>115,0%</td><td>56</td></tr><tr><td>Joao Pessoa</td><td>Tiktok Ads</td><td>1</td><td>2024-06-01</td><td>2024-06-30</td><td>11.919,00</td><td>11.910,15</td><td>99,9%</td><td>29,8%</td><td>18</td></tr><tr><td>Especial Cabelos</td><td>Meta Ads</td><td>1</td><td>2024-06-11</td><td>2024-06-23</td><td>5.000,00</td><td>5.000,00</td><td>100,0%</td><td>142,8%</td><td>13</td></tr><tr><td>Joao Pessoa</td><td>Youtube Ads</td><td>2</td><td>2024-06-01</td><td>2024-06-30</td><td>não orçado</td><td>5.338,11</td><td>149,5%</td><td>327,7%</td><td>50</td></tr><tr><td>Joao Pessoa - Não Pulavel</td><td>Youtube Ads</td><td>1</td><td>2024-06-01</td><td>2024-06-30</td><td>não orçado</td><td>5.949,31</td><td>sem denominador</td><td>sem denominador</td><td>26</td></tr></tbody></table></div>
+
+<div class="nota">
+<p><strong>Como ler este painel.</strong> Pacing é o que foi entregue dividido pelo que foi
+planejado. Só conta a entrega da mesma campanha, no mesmo veículo, com data dentro da janela
+daquele flight. Onde o plano tem flights sobrepostos, a mesma entrega é reivindicada por mais de
+um flight; ela é contada <strong>uma vez só</strong>. São
+147 dias de entrega nessa situação, um deles
+disputado por 4 flights. Sem essa correção o
+painel mostraria 219,66% de impressões em vez de
+121,70%. Por isso a tabela abre por campanha e veículo, e não
+por flight: onde as janelas se cruzam, a entrega de um dia não pertence a um flight específico,
+e um pacing por flight ali seria artefato da sobreposição, não resultado. A coluna Flights mostra
+quantos flights foram somados em cada linha.</p>
+<p><strong>O que ele não mostra.</strong> Campanha sem linha de planejado fica fora do pacing:
+são 166 campanhas e
+R$ 12.098.469,92. No total,
+93,87% do investimento realizado no arquivo não pertence
+a este plano. Um par campanha e veículo não tem pacing porque nada foi orçado contra ele, e
+aparece na tabela como sem denominador; ele nunca é mostrado como 0%. O painel também não mostra
+pacing por flight isolado onde as janelas se cruzam, porque o dado diário não diz a qual flight
+pertence.</p>
+</div>
+
+<footer>
+Dados de BASE DE PACING_v2.csv.xls, entregas de 2023-01-03 a 2024-08-09, plano de 2024-05-28 a
+2024-07-31. Gerado por <code>analise/scripts/08_dashboard.py</code> a partir de
+<code>analise/numeros.json</code>, que por sua vez vem de <code>01_escopo.py</code>,
+<code>02_sobreposicao.py</code>, <code>03_pacing.py</code>, <code>04_alternativas.py</code>,
+<code>05_cortes.py</code>, <code>06_cliques.py</code> e <code>07_citados.py</code>.
+Nenhum recurso é carregado da rede: o arquivo abre offline e por anexo de email.
+</footer>
+</div>
+<script>
+(function(){
+  var busca=document.getElementById('busca'), tab=document.getElementById('tabela');
+  var corpo=tab.tBodies[0], linhas=Array.prototype.slice.call(corpo.rows), ordem={};
+  busca.addEventListener('input',function(){
+    var q=busca.value.toLowerCase();
+    linhas.forEach(function(l){
+      l.style.display = l.textContent.toLowerCase().indexOf(q)>-1 ? '' : 'none';
+    });
+  });
+  function limpar(t){
+    var n=parseFloat(t.replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.'));
+    return isNaN(n)?null:n;
+  }
+  function ordenar(i){
+    var asc = ordem[i] = !ordem[i];
+    linhas.sort(function(a,b){
+      var x=a.cells[i].textContent.trim(), y=b.cells[i].textContent.trim();
+      var nx=limpar(x), ny=limpar(y);
+      if(nx!==null&&ny!==null) return asc?nx-ny:ny-nx;
+      return asc?x.localeCompare(y,'pt-BR'):y.localeCompare(x,'pt-BR');
+    });
+    linhas.forEach(function(l){corpo.appendChild(l)});
+  }
+  Array.prototype.forEach.call(tab.tHead.rows[0].cells,function(th){
+    th.addEventListener('click',function(){ordenar(+th.dataset.col)});
+    th.addEventListener('keydown',function(e){
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();ordenar(+th.dataset.col);}
+    });
+  });
+})();
+</script>
+</body>
+</html>

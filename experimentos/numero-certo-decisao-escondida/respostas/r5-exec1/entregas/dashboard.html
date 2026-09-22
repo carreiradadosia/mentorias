@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pacing de campanhas — planejado contra realizado</title>
+<style>
+:root {
+  color-scheme: light;
+  --plane: #f9f9f7; --surface-1: #fcfcfb;
+  --ink-1: #0b0b0b; --ink-2: #52514e; --ink-muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
+  --series-1: #2a78d6; --series-2: #eb6834;
+  --status-good: #0ca30c; --status-warning: #fab219; --status-critical: #d03b3b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --plane: #0d0d0d; --surface-1: #1a1a19;
+    --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --series-1: #3987e5; --series-2: #d95926;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 28px 20px 56px;
+  background: var(--plane); color: var(--ink-1);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px; line-height: 1.55;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+h1 { font-size: 26px; line-height: 1.25; margin: 0 0 6px; letter-spacing: -0.01em; }
+.resposta { font-size: 17px; color: var(--ink-2); margin: 0 0 26px; max-width: 74ch; }
+h2 { font-size: 17px; margin: 0 0 4px; letter-spacing: -0.005em; }
+.sub { font-size: 13px; color: var(--ink-muted); margin: 0 0 14px; }
+.card {
+  background: var(--surface-1); border: 1px solid var(--ring);
+  border-radius: 12px; padding: 18px 20px; margin-bottom: 18px;
+}
+.grade { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+.grade2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.tile { background: var(--surface-1); border: 1px solid var(--ring); border-radius: 12px; padding: 15px 16px; }
+.tile-rot { font-size: 12.5px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .04em; }
+.tile-val { font-size: 32px; font-weight: 650; margin: 5px 0 3px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.tile-sub { font-size: 12.5px; color: var(--ink-muted); }
+.st-good { color: var(--status-good); }
+.st-warning { color: var(--ink-1); }
+.st-critical { color: var(--status-critical); }
+.legenda { display: flex; gap: 18px; font-size: 12.5px; color: var(--ink-2); margin-top: 6px; }
+.legenda i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--ring); }
+.pill.good { color: var(--status-good); }
+.pill.warning { color: var(--ink-1); }
+.pill.critical { color: var(--status-critical); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 7px 9px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+th { cursor: pointer; user-select: none; color: var(--ink-2); font-weight: 600; font-size: 12.5px; }
+th:hover { color: var(--ink-1); }
+.filtro {
+  width: 100%; max-width: 340px; padding: 8px 11px; margin-bottom: 12px;
+  border: 1px solid var(--ring); border-radius: 8px;
+  background: var(--plane); color: var(--ink-1); font-size: 14px; font-family: inherit;
+}
+.tabela-scroll { overflow-x: auto; }
+.nota { font-size: 13.5px; color: var(--ink-2); }
+.nota li { margin-bottom: 5px; }
+footer { font-size: 12.5px; color: var(--ink-muted); margin-top: 26px; border-top: 1px solid var(--grid); padding-top: 14px; }
+code { font-size: 12px; background: var(--surface-1); border: 1px solid var(--ring); border-radius: 4px; padding: 1px 5px; }
+#tip {
+  position: fixed; pointer-events: none; opacity: 0; transition: opacity .1s;
+  background: var(--surface-1); border: 1px solid var(--ring); border-radius: 8px;
+  padding: 7px 10px; font-size: 12.5px; box-shadow: 0 4px 14px rgba(0,0,0,.14); z-index: 9;
+}
+@media (max-width: 700px) {
+  .grade, .grade2 { grid-template-columns: 1fr; }
+  h1 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Pacing de campanhas: entregamos o que foi planejado?</h1>
+<p class="resposta">Entregamos a verba e as impressões, mas não os cliques. O investimento fechou
+em 100,75% do plano e as impressões em 121,70%,
+enquanto os cliques pararam em 47,32%.</p>
+
+<div class="grade"><div class="tile"><div class="tile-rot">Pacing de investimento</div><div class="tile-val st-good">100,75%</div><div class="tile-sub">R$ 1.041.385,17 de R$ 1.033.625,08 planejados</div></div><div class="tile"><div class="tile-rot">Pacing de impressões</div><div class="tile-val st-good">121,70%</div><div class="tile-sub">29.749.424 impressões acima do plano</div></div><div class="tile"><div class="tile-rot">Pacing de cliques</div><div class="tile-val st-critical">47,32%</div><div class="tile-sub">faltaram 330.185 cliques</div></div><div class="tile"><div class="tile-rot">Cobertura do plano</div><div class="tile-val st-warning">6,10%</div><div class="tile-sub">93,90% do gasto não tem plano nesta base</div></div></div>
+
+<div class="card">
+  <h2>O plano foi cumprido em verba e em impressão, e não em clique</h2>
+  <p class="sub">Pacing por métrica, sobre 25 pares de campanha e veículo
+  e 884 linhas de entrega diária. A linha tracejada é o plano.</p>
+  <svg viewBox="0 0 640 208" role="img" width="100%" height="208"><line x1="150.0" y1="18" x2="150.0" y2="174" stroke="var(--grid)" stroke-width="1"/><text x="150.0" y="196" fill="var(--ink-muted)" font-size="11" text-anchor="middle">0%</text><line x1="300.0" y1="18" x2="300.0" y2="174" stroke="var(--grid)" stroke-width="1"/><text x="300.0" y="196" fill="var(--ink-muted)" font-size="11" text-anchor="middle">50%</text><line x1="450.0" y1="18" x2="450.0" y2="174" stroke="var(--grid)" stroke-width="1"/><text x="450.0" y="196" fill="var(--ink-muted)" font-size="11" text-anchor="middle">100%</text><rect x="150" y="26" width="302.3" height="32" rx="4" fill="var(--status-good)"/><text x="140" y="46.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Investimento</text><text x="460.3" y="46.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,8%</text><rect x="150" y="78" width="365.1" height="32" rx="4" fill="var(--status-warning)"/><text x="140" y="98.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Impressões</text><text x="523.1" y="98.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">121,7%</text><rect x="150" y="130" width="142.0" height="32" rx="4" fill="var(--status-critical)"/><text x="140" y="150.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Cliques</text><text x="300.0" y="150.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">47,3%</text><line x1="450.0" y1="12" x2="450.0" y2="176" stroke="var(--ink-1)" stroke-width="2" stroke-dasharray="5 4"/><text x="450.0" y="8" fill="var(--ink-2)" font-size="11" text-anchor="middle">plano</text></svg>
+</div>
+
+<div class="grade2">
+  <div class="card">
+    <h2>Tiktok entregou menos da metade da verba planejada</h2>
+    <p class="sub">Investimento planejado e realizado por veículo, em milhares de reais. O número
+    abaixo de cada veículo é o pacing.</p>
+    <svg viewBox="0 0 640 300" role="img" width="100%" height="300"><line x1="78" y1="254.0" x2="624" y2="254.0" stroke="var(--grid)" stroke-width="1"/><text x="70" y="258.0" fill="var(--ink-muted)" font-size="11" text-anchor="end">0k</text><line x1="78" y1="196.0" x2="624" y2="196.0" stroke="var(--grid)" stroke-width="1"/><text x="70" y="200.0" fill="var(--ink-muted)" font-size="11" text-anchor="end">254k</text><line x1="78" y1="138.0" x2="624" y2="138.0" stroke="var(--grid)" stroke-width="1"/><text x="70" y="142.0" fill="var(--ink-muted)" font-size="11" text-anchor="end">508k</text><line x1="78" y1="80.0" x2="624" y2="80.0" stroke="var(--grid)" stroke-width="1"/><text x="70" y="84.0" fill="var(--ink-muted)" font-size="11" text-anchor="end">762k</text><line x1="78" y1="22.0" x2="624" y2="22.0" stroke="var(--grid)" stroke-width="1"/><text x="70" y="26.0" fill="var(--ink-muted)" font-size="11" text-anchor="end">1.016k</text><rect x="122.0" y="65.4" width="46.0" height="188.6" rx="4" fill="var(--series-1)"/><rect x="170.0" y="52.3" width="46.0" height="201.7" rx="4" fill="var(--series-2)"/><text x="169.0" y="272.0" fill="var(--ink-1)" font-size="12" text-anchor="middle">Meta Ads</text><text x="169.0" y="288.0" fill="var(--ink-muted)" font-size="11" text-anchor="middle">107,0%</text><rect x="304.0" y="231.4" width="46.0" height="22.6" rx="4" fill="var(--series-1)"/><rect x="352.0" y="243.2" width="46.0" height="10.8" rx="4" fill="var(--series-2)"/><text x="351.0" y="272.0" fill="var(--ink-1)" font-size="12" text-anchor="middle">Tiktok Ads</text><text x="351.0" y="288.0" fill="var(--ink-muted)" font-size="11" text-anchor="middle">47,7%</text><rect x="486.0" y="229.2" width="46.0" height="24.8" rx="4" fill="var(--series-1)"/><rect x="534.0" y="228.8" width="46.0" height="25.2" rx="4" fill="var(--series-2)"/><text x="533.0" y="272.0" fill="var(--ink-1)" font-size="12" text-anchor="middle">Youtube Ads</text><text x="533.0" y="288.0" fill="var(--ink-muted)" font-size="11" text-anchor="middle">101,6%</text><line x1="78" y1="254" x2="624" y2="254" stroke="var(--axis)" stroke-width="1"/></svg><div class="legenda"><span><i style="background:var(--series-1)"></i>Planejado</span><span><i style="background:var(--series-2)"></i>Realizado</span></div>
+  </div>
+  <div class="card">
+    <h2>A entrega se concentra em junho e julho de 2024</h2>
+    <p class="sub">Investimento realizado por dia, dentro das janelas contratadas, em milhares de
+    reais. Passe o cursor para ver o dia.</p>
+    <svg viewBox="0 0 640 280" role="img" width="100%" height="280" class="svg-hover" data-plot="70,20,554,220"><line x1="70" y1="240.0" x2="624" y2="240.0" stroke="var(--grid)" stroke-width="1"/><text x="62" y="244.0" fill="var(--ink-muted)" font-size="11" text-anchor="end">0k</text><line x1="70" y1="185.0" x2="624" y2="185.0" stroke="var(--grid)" stroke-width="1"/><text x="62" y="189.0" fill="var(--ink-muted)" font-size="11" text-anchor="end">12k</text><line x1="70" y1="130.0" x2="624" y2="130.0" stroke="var(--grid)" stroke-width="1"/><text x="62" y="134.0" fill="var(--ink-muted)" font-size="11" text-anchor="end">25k</text><line x1="70" y1="75.0" x2="624" y2="75.0" stroke="var(--grid)" stroke-width="1"/><text x="62" y="79.0" fill="var(--ink-muted)" font-size="11" text-anchor="end">37k</text><line x1="70" y1="20.0" x2="624" y2="20.0" stroke="var(--grid)" stroke-width="1"/><text x="62" y="24.0" fill="var(--ink-muted)" font-size="11" text-anchor="end">50k</text><polyline points="70.0,229.1 78.7,212.4 87.3,214.2 96.0,215.3 104.6,203.7 113.3,209.7 121.9,207.1 130.6,199.9 139.2,197.4 147.9,161.4 156.6,152.2 165.2,181.0 173.9,179.7 182.5,216.6 191.2,218.5 199.8,205.9 208.5,164.8 217.2,142.8 225.8,133.0 234.5,139.0 243.1,171.3 251.8,137.0 260.4,95.4 269.1,133.8 277.8,122.9 286.4,112.6 295.1,101.9 303.7,169.5 312.4,122.8 321.0,94.1 329.7,86.1 338.3,79.4 347.0,79.6 355.7,82.5 364.3,201.4 373.0,195.3 381.6,195.0 390.3,146.6 398.9,138.3 407.6,119.2 416.2,110.5 424.9,202.9 433.6,204.0 442.2,199.0 450.9,192.6 459.5,181.4 468.2,182.1 476.8,179.2 485.5,183.3 494.2,156.6 502.8,43.6 511.5,195.0 520.1,205.8 528.8,194.7 537.4,192.5 546.1,200.5 554.8,197.6 563.4,198.7 572.1,196.5 580.7,197.0 589.4,200.9 598.0,199.1 606.7,203.3 615.3,200.2 624.0,197.6" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round"/><text x="70.0" y="258.0" fill="var(--ink-muted)" font-size="10.5" text-anchor="middle">28/05</text><text x="139.2" y="258.0" fill="var(--ink-muted)" font-size="10.5" text-anchor="middle">05/06</text><text x="208.5" y="258.0" fill="var(--ink-muted)" font-size="10.5" text-anchor="middle">13/06</text><text x="277.8" y="258.0" fill="var(--ink-muted)" font-size="10.5" text-anchor="middle">21/06</text><text x="347.0" y="258.0" fill="var(--ink-muted)" font-size="10.5" text-anchor="middle">29/06</text><text x="416.2" y="258.0" fill="var(--ink-muted)" font-size="10.5" text-anchor="middle">07/07</text><text x="485.5" y="258.0" fill="var(--ink-muted)" font-size="10.5" text-anchor="middle">15/07</text><text x="554.8" y="258.0" fill="var(--ink-muted)" font-size="10.5" text-anchor="middle">23/07</text><text x="624.0" y="258.0" fill="var(--ink-muted)" font-size="10.5" text-anchor="middle">31/07</text><line x1="70" y1="240" x2="624" y2="240" stroke="var(--axis)" stroke-width="1"/><line class="crosshair" x1="0" y1="20" x2="0" y2="240" stroke="var(--ink-muted)" stroke-width="1" stroke-dasharray="3 3" opacity="0"/><circle class="foco" r="5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2" opacity="0"/></svg>
+  </div>
+</div>
+
+<div class="card">
+  <h2>A média esconde os extremos: campanhas de 0% a 134%</h2>
+  <p class="sub">Pacing de investimento por campanha. Verde entre 90% e
+  110%, amarelo acima, vermelho abaixo. O rótulo ao lado da barra traz o valor.</p>
+  <svg viewBox="0 0 640 592" role="img" width="100%" height="592"><line x1="150.0" y1="18" x2="150.0" y2="558" stroke="var(--grid)" stroke-width="1"/><text x="150.0" y="580" fill="var(--ink-muted)" font-size="11" text-anchor="middle">0%</text><line x1="295.0" y1="18" x2="295.0" y2="558" stroke="var(--grid)" stroke-width="1"/><text x="295.0" y="580" fill="var(--ink-muted)" font-size="11" text-anchor="middle">50%</text><line x1="440.0" y1="18" x2="440.0" y2="558" stroke="var(--grid)" stroke-width="1"/><text x="440.0" y="580" fill="var(--ink-muted)" font-size="11" text-anchor="middle">100%</text><rect x="150" y="26" width="2.0" height="10" rx="4" fill="var(--status-critical)"/><text x="140" y="35.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Inauguracao</text><text x="158.0" y="35.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">0,0%</text><rect x="150" y="56" width="238.3" height="10" rx="4" fill="var(--status-critical)"/><text x="140" y="65.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Impulsionamentos</text><text x="396.3" y="65.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">82,2%</text><rect x="150" y="86" width="269.9" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="95.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Cashback Resgate</text><text x="427.9" y="95.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">93,1%</text><rect x="150" y="116" width="271.8" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="125.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Feira de Santana</text><text x="429.8" y="125.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">93,7%</text><rect x="150" y="146" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="155.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Fortaleza</text><text x="448.0" y="155.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="176" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="185.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Cashback</text><text x="448.0" y="185.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="206" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="215.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Uberlandia</text><text x="448.0" y="215.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="236" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="245.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Fds3 Ofertasbr</text><text x="448.0" y="245.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="266" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="275.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Fds2 Ofertasbr</text><text x="448.0" y="275.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="296" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="305.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Mega Day</text><text x="448.0" y="305.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="326" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="335.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Oportunidades Incriveis</text><text x="448.0" y="335.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="356" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="365.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Fds1</text><text x="448.0" y="365.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="386" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="395.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Especial Cabelos</text><text x="448.0" y="395.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="416" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="425.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Fds2</text><text x="448.0" y="425.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="446" width="290.0" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="455.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Fds3</text><text x="448.0" y="455.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">100,0%</text><rect x="150" y="476" width="302.4" height="10" rx="4" fill="var(--status-good)"/><text x="140" y="485.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Joao Pessoa</text><text x="460.4" y="485.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">104,3%</text><rect x="150" y="506" width="372.0" height="10" rx="4" fill="var(--status-warning)"/><text x="140" y="515.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Freeshop</text><text x="530.0" y="515.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">128,3%</text><rect x="150" y="536" width="388.9" height="10" rx="4" fill="var(--status-warning)"/><text x="140" y="545.0" fill="var(--ink-1)" font-size="12.5" text-anchor="end">Maceio</text><text x="546.9" y="545.0" fill="var(--ink-2)" font-size="12.5" font-weight="600">134,1%</text><line x1="440.0" y1="12" x2="440.0" y2="560" stroke="var(--ink-1)" stroke-width="2" stroke-dasharray="5 4"/><text x="440.0" y="8" fill="var(--ink-2)" font-size="11" text-anchor="middle">plano</text></svg>
+</div>
+
+<div class="card">
+  <h2>Detalhe por campanha e veículo</h2>
+  <p class="sub">25 pares com denominador válido. Filtre por texto ou
+  clique no cabeçalho para ordenar.</p>
+  <input class="filtro" id="filtro" type="text" placeholder="Filtrar por campanha ou veículo" aria-label="Filtrar tabela">
+  <div class="tabela-scroll">
+  <table id="tb">
+    <thead><tr>
+      <th data-k="campanha">Campanha</th>
+      <th data-k="veiculo">Veículo</th>
+      <th data-k="ord_plan">Investimento planejado</th>
+      <th data-k="ord_real">Investimento realizado</th>
+      <th data-k="ord_inv">Pacing investimento</th>
+      <th data-k="ord_imp">Pacing impressões</th>
+      <th data-k="ord_cli">Pacing cliques</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+</div>
+
+<div class="grade2">
+  <div class="card nota">
+    <h2>Como ler este painel</h2>
+    <ul>
+      <li>Pacing é o realizado dividido pelo planejado. Acima de 100% entregou mais do que o orçado.</li>
+      <li>Uma entrega diária só entra na conta se for da mesma campanha, no mesmo veículo, e em data
+      dentro da janela contratada.</li>
+      <li>Quando o plano tem janelas sobrepostas, a mesma entrega conta uma vez só. Sem isso, o
+      pacing de investimento apareceria como 151,32%.</li>
+    </ul>
+  </div>
+  <div class="card nota">
+    <h2>O que ele não mostra</h2>
+    <ul>
+      <li>A operação inteira. O plano cobre 6,10% do investimento
+      realizado no arquivo; o resto é campanha sem plano nesta base.</li>
+      <li>O par <code>Joao Pessoa - Não Pulavel / Youtube Ads</code>, que ficou fora porque o plano
+      tem investimento em branco e zero impressões, apesar de ter entregue R$ 5.949,31.</li>
+      <li>Pacing de um flight isolado dentro dos grupos com janela sobreposta.</li>
+      <li>Resultado de negócio. O arquivo tem entrega de mídia, não tem venda nem receita.</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+Dados de <strong>2024-05-28</strong> a <strong>2024-07-31</strong>, janela do plano. Arquivo de
+origem <code>BASE DE PACING_v2.csv.xls</code>, que apesar da extensão é um CSV.
+Gerado por <code>analise/scripts/08_dashboard.py</code>, a partir de
+<code>analise/numeros.json</code>. O detalhe da tabela vem de
+<code>analise/pacing_valido.csv</code>, produzido por <code>analise/scripts/04_pacing.py</code>.
+Pipeline completo em <code>analise/scripts/</code>, de <code>01_escopo.py</code> a
+<code>07_destaques.py</code>; decisões de método em <code>analise/decisoes.md</code>.
+</footer>
+
+</div>
+<div id="tip" role="status"></div>
+<script>
+const LINHAS = [{"campanha": "Inauguracao", "veiculo": "Tiktok Ads", "inv_plan": "R$ 24.797,50", "inv_real": "R$ 0,00", "pac_inv": "0,0%", "pac_imp": "0,0%", "pac_cli": "0,0%", "ord_inv": 0.0, "ord_imp": 0.0, "ord_cli": 0.0, "ord_plan": 24797.5, "ord_real": 0.0, "status": "critical"}, {"campanha": "Impulsionamentos", "veiculo": "Tiktok Ads", "inv_plan": "R$ 62.333,33", "inv_real": "R$ 35.380,10", "pac_inv": "56,8%", "pac_imp": "37,1%", "pac_cli": "16,6%", "ord_inv": 56.75952168070698, "ord_imp": 37.10596868843261, "ord_cli": 16.60455632119252, "ord_plan": 62333.330078125, "ord_real": 35380.100000000006, "status": "critical"}, {"campanha": "Feira de Santana", "veiculo": "Meta Ads", "inv_plan": "R$ 27.052,80", "inv_real": "R$ 23.671,20", "pac_inv": "87,5%", "pac_imp": "239,6%", "pac_cli": "95,8%", "ord_inv": 87.49999747311284, "ord_imp": 239.5854107523066, "ord_cli": 95.77417923691216, "ord_plan": 27052.80078125, "ord_real": 23671.2, "status": "critical"}, {"campanha": "Cashback Resgate", "veiculo": "Meta Ads", "inv_plan": "R$ 26.867,52", "inv_real": "R$ 25.004,40", "pac_inv": "93,1%", "pac_imp": "136,1%", "pac_cli": "101,3%", "ord_inv": 93.06553204852804, "ord_imp": 136.11951318871576, "ord_cli": 101.27388535031848, "ord_plan": 26867.51953125, "ord_real": 25004.4, "status": "good"}, {"campanha": "Impulsionamentos", "veiculo": "Meta Ads", "inv_plan": "R$ 107.166,67", "inv_real": "R$ 103.921,98", "pac_inv": "97,0%", "pac_imp": "91,5%", "pac_cli": "132,8%", "ord_inv": 96.97229565475874, "ord_imp": 91.53241394922506, "ord_cli": 132.78838437564153, "ord_plan": 107166.669921875, "ord_real": 103921.98000000004, "status": "good"}, {"campanha": "Joao Pessoa", "veiculo": "Tiktok Ads", "inv_plan": "R$ 11.919,00", "inv_real": "R$ 11.910,15", "pac_inv": "99,9%", "pac_imp": "29,8%", "pac_cli": "23,3%", "ord_inv": 99.9257488044299, "ord_imp": 29.78064434935817, "ord_cli": 23.34088430237436, "ord_plan": 11919.0, "ord_real": 11910.15, "status": "good"}, {"campanha": "Feira de Santana", "veiculo": "Youtube Ads", "inv_plan": "R$ 26.880,00", "inv_real": "R$ 26.876,18", "pac_inv": "100,0%", "pac_imp": "70,9%", "pac_cli": "56,7%", "ord_inv": 99.98578013392856, "ord_imp": 70.92220238095238, "ord_cli": 56.65606993840652, "ord_plan": 26880.0, "ord_real": 26876.1777, "status": "good"}, {"campanha": "Maceio", "veiculo": "Youtube Ads", "inv_plan": "R$ 41.580,00", "inv_real": "R$ 41.576,49", "pac_inv": "100,0%", "pac_imp": "96,5%", "pac_cli": "513,8%", "ord_inv": 99.99156277056278, "ord_imp": 96.52865612648222, "ord_cli": 513.844967219437, "ord_plan": 41580.0, "ord_real": 41576.4918, "status": "good"}, {"campanha": "Fortaleza", "veiculo": "Youtube Ads", "inv_plan": "R$ 12.600,00", "inv_real": "R$ 12.599,12", "pac_inv": "100,0%", "pac_imp": "115,0%", "pac_cli": "114,9%", "ord_inv": 99.9930023809524, "ord_imp": 115.02984126984126, "ord_cli": 114.92063492063492, "ord_plan": 12600.0, "ord_real": 12599.118300000002, "status": "good"}, {"campanha": "Uberlandia", "veiculo": "Youtube Ads", "inv_plan": "R$ 23.963,16", "inv_real": "R$ 23.961,99", "pac_inv": "100,0%", "pac_imp": "71,2%", "pac_cli": "48,6%", "ord_inv": 99.99513730141432, "ord_imp": 71.18446815862349, "ord_cli": 48.61823044350345, "ord_plan": 23963.16015625, "ord_real": 23961.9949, "status": "good"}, {"campanha": "Cashback", "veiculo": "Meta Ads", "inv_plan": "R$ 105.640,00", "inv_real": "R$ 105.637,44", "pac_inv": "100,0%", "pac_imp": "96,7%", "pac_cli": "102,8%", "ord_inv": 99.99757667550172, "ord_imp": 96.70933874709976, "ord_cli": 102.81902552204176, "ord_plan": 105640.0, "ord_real": 105637.44000000002, "status": "good"}, {"campanha": "Uberlandia", "veiculo": "Meta Ads", "inv_plan": "R$ 26.826,48", "inv_real": "R$ 26.826,42", "pac_inv": "100,0%", "pac_imp": "267,8%", "pac_cli": "91,2%", "ord_inv": 99.99977459305528, "ord_imp": 267.80975640384435, "ord_cli": 91.23091912958752, "ord_plan": 26826.48046875, "ord_real": 26826.42, "status": "good"}, {"campanha": "Fortaleza", "veiculo": "Meta Ads", "inv_plan": "R$ 16.500,00", "inv_real": "R$ 16.499,99", "pac_inv": "100,0%", "pac_imp": "351,8%", "pac_cli": "369,3%", "ord_inv": 99.9999393939394, "ord_imp": 351.7937878787879, "ord_cli": 369.2727272727273, "ord_plan": 16500.0, "ord_real": 16499.99, "status": "good"}, {"campanha": "Joao Pessoa", "veiculo": "Meta Ads", "inv_plan": "R$ 25.676,80", "inv_real": "R$ 25.676,79", "pac_inv": "100,0%", "pac_imp": "165,0%", "pac_cli": "50,0%", "ord_inv": 99.99995801170834, "ord_imp": 164.96648466742215, "ord_cli": 49.99732691793638, "ord_plan": 25676.80078125, "ord_real": 25676.79, "status": "good"}, {"campanha": "Fds2 Ofertasbr", "veiculo": "Meta Ads", "inv_plan": "R$ 24.547,13", "inv_real": "R$ 24.547,13", "pac_inv": "100,0%", "pac_imp": "114,6%", "pac_cli": "85,5%", "ord_inv": 99.99999649908167, "ord_imp": 114.6348706824119, "ord_cli": 85.45587875824981, "ord_plan": 24547.130859375, "ord_real": 24547.13, "status": "good"}, {"campanha": "Fds3 Ofertasbr", "veiculo": "Meta Ads", "inv_plan": "R$ 24.547,13", "inv_real": "R$ 24.547,13", "pac_inv": "100,0%", "pac_imp": "186,2%", "pac_cli": "109,3%", "ord_inv": 99.99999649908167, "ord_imp": 186.18029606318456, "ord_cli": 109.31312637496944, "ord_plan": 24547.130859375, "ord_real": 24547.13, "status": "good"}, {"campanha": "Fds1", "veiculo": "Meta Ads", "inv_plan": "R$ 76.000,00", "inv_real": "R$ 76.000,00", "pac_inv": "100,0%", "pac_imp": "74,2%", "pac_cli": "60,7%", "ord_inv": 100.0, "ord_imp": 74.18793062200957, "ord_cli": 60.68421052631579, "ord_plan": 76000.0, "ord_real": 76000.0, "status": "good"}, {"campanha": "Mega Day", "veiculo": "Meta Ads", "inv_plan": "R$ 101.840,00", "inv_real": "R$ 101.840,00", "pac_inv": "100,0%", "pac_imp": "60,8%", "pac_cli": "161,3%", "ord_inv": 100.0, "ord_imp": 60.83284412955465, "ord_cli": 161.2753036437247, "ord_plan": 101840.0, "ord_real": 101840.0, "status": "good"}, {"campanha": "Oportunidades Incriveis", "veiculo": "Meta Ads", "inv_plan": "R$ 45.000,00", "inv_real": "R$ 45.000,00", "pac_inv": "100,0%", "pac_imp": "152,2%", "pac_cli": "125,4%", "ord_inv": 100.0, "ord_imp": 152.208, "ord_cli": 125.38666666666668, "ord_plan": 45000.0, "ord_real": 45000.0, "status": "good"}, {"campanha": "Especial Cabelos", "veiculo": "Meta Ads", "inv_plan": "R$ 5.000,00", "inv_real": "R$ 5.000,00", "pac_inv": "100,0%", "pac_imp": "142,8%", "pac_cli": "105,7%", "ord_inv": 100.00000000000004, "ord_imp": 142.80944, "ord_cli": 105.71581196581197, "ord_plan": 5000.0, "ord_real": 5000.000000000001, "status": "good"}, {"campanha": "Fds2", "veiculo": "Meta Ads", "inv_plan": "R$ 19.186,20", "inv_real": "R$ 19.186,20", "pac_inv": "100,0%", "pac_imp": "99,1%", "pac_cli": "78,8%", "ord_inv": 100.0000040719373, "ord_imp": 99.09255089595646, "ord_cli": 78.79261807944948, "ord_plan": 19186.19921875, "ord_real": 19186.2, "status": "good"}, {"campanha": "Fds3", "veiculo": "Meta Ads", "inv_plan": "R$ 19.186,20", "inv_real": "R$ 19.186,20", "pac_inv": "100,0%", "pac_imp": "68,4%", "pac_cli": "53,7%", "ord_inv": 100.0000040719373, "ord_imp": 68.40807455358538, "ord_cli": 53.73787926180794, "ord_plan": 19186.19921875, "ord_real": 19186.2, "status": "good"}, {"campanha": "Freeshop", "veiculo": "Meta Ads", "inv_plan": "R$ 130.157,56", "inv_real": "R$ 166.957,62", "pac_inv": "128,3%", "pac_imp": "114,1%", "pac_cli": "11,5%", "ord_inv": 128.27346855085736, "ord_imp": 114.13552734147466, "ord_cli": 11.483815136792211, "ord_plan": 130157.5625, "ord_real": 166957.62, "status": "warning"}, {"campanha": "Joao Pessoa", "veiculo": "Youtube Ads", "inv_plan": "R$ 3.570,00", "inv_real": "R$ 5.338,11", "pac_inv": "149,5%", "pac_imp": "327,7%", "pac_cli": "261,2%", "ord_inv": 149.52689915966383, "ord_imp": 327.7423529411765, "ord_cli": 261.1764705882353, "ord_plan": 3570.0, "ord_real": 5338.110299999999, "status": "warning"}, {"campanha": "Maceio", "veiculo": "Meta Ads", "inv_plan": "R$ 44.787,60", "inv_real": "R$ 74.240,53", "pac_inv": "165,8%", "pac_imp": "230,3%", "pac_cli": "274,8%", "ord_inv": 165.7613505691425, "ord_imp": 230.3125511875512, "ord_cli": 274.8472656832067, "ord_plan": 44787.599609375, "ord_real": 74240.53, "status": "warning"}];
+const SERIE = [{"d": "28/05/2024", "v": "R$ 2.449,22"}, {"d": "29/05/2024", "v": "R$ 6.226,05"}, {"d": "30/05/2024", "v": "R$ 5.809,91"}, {"d": "31/05/2024", "v": "R$ 5.576,23"}, {"d": "01/06/2024", "v": "R$ 8.176,51"}, {"d": "02/06/2024", "v": "R$ 6.824,09"}, {"d": "03/06/2024", "v": "R$ 7.415,87"}, {"d": "04/06/2024", "v": "R$ 9.040,82"}, {"d": "05/06/2024", "v": "R$ 9.605,95"}, {"d": "06/06/2024", "v": "R$ 17.727,54"}, {"d": "07/06/2024", "v": "R$ 19.801,32"}, {"d": "08/06/2024", "v": "R$ 13.301,92"}, {"d": "09/06/2024", "v": "R$ 13.609,76"}, {"d": "10/06/2024", "v": "R$ 5.283,15"}, {"d": "11/06/2024", "v": "R$ 4.860,20"}, {"d": "12/06/2024", "v": "R$ 7.692,57"}, {"d": "13/06/2024", "v": "R$ 16.969,20"}, {"d": "14/06/2024", "v": "R$ 21.926,90"}, {"d": "15/06/2024", "v": "R$ 24.138,49"}, {"d": "16/06/2024", "v": "R$ 22.791,31"}, {"d": "17/06/2024", "v": "R$ 15.499,88"}, {"d": "18/06/2024", "v": "R$ 23.240,55"}, {"d": "19/06/2024", "v": "R$ 32.611,98"}, {"d": "20/06/2024", "v": "R$ 23.943,39"}, {"d": "21/06/2024", "v": "R$ 26.412,11"}, {"d": "22/06/2024", "v": "R$ 28.731,04"}, {"d": "23/06/2024", "v": "R$ 31.154,79"}, {"d": "24/06/2024", "v": "R$ 15.897,73"}, {"d": "25/06/2024", "v": "R$ 26.428,36"}, {"d": "26/06/2024", "v": "R$ 32.906,75"}, {"d": "27/06/2024", "v": "R$ 34.713,90"}, {"d": "28/06/2024", "v": "R$ 36.219,32"}, {"d": "29/06/2024", "v": "R$ 36.178,44"}, {"d": "30/06/2024", "v": "R$ 35.529,96"}, {"d": "01/07/2024", "v": "R$ 8.697,84"}, {"d": "02/07/2024", "v": "R$ 10.092,13"}, {"d": "03/07/2024", "v": "R$ 10.160,38"}, {"d": "04/07/2024", "v": "R$ 21.067,23"}, {"d": "05/07/2024", "v": "R$ 22.932,04"}, {"d": "06/07/2024", "v": "R$ 27.241,35"}, {"d": "07/07/2024", "v": "R$ 29.207,57"}, {"d": "08/07/2024", "v": "R$ 8.358,44"}, {"d": "09/07/2024", "v": "R$ 8.123,07"}, {"d": "10/07/2024", "v": "R$ 9.247,45"}, {"d": "11/07/2024", "v": "R$ 10.689,78"}, {"d": "12/07/2024", "v": "R$ 13.212,47"}, {"d": "13/07/2024", "v": "R$ 13.066,99"}, {"d": "14/07/2024", "v": "R$ 13.703,32"}, {"d": "15/07/2024", "v": "R$ 12.797,09"}, {"d": "16/07/2024", "v": "R$ 18.821,10"}, {"d": "17/07/2024", "v": "R$ 44.305,65"}, {"d": "18/07/2024", "v": "R$ 10.161,21"}, {"d": "19/07/2024", "v": "R$ 7.707,01"}, {"d": "20/07/2024", "v": "R$ 10.221,69"}, {"d": "21/07/2024", "v": "R$ 10.716,63"}, {"d": "22/07/2024", "v": "R$ 8.912,76"}, {"d": "23/07/2024", "v": "R$ 9.574,51"}, {"d": "24/07/2024", "v": "R$ 9.308,98"}, {"d": "25/07/2024", "v": "R$ 9.808,01"}, {"d": "26/07/2024", "v": "R$ 9.695,04"}, {"d": "27/07/2024", "v": "R$ 8.810,59"}, {"d": "28/07/2024", "v": "R$ 9.232,23"}, {"d": "29/07/2024", "v": "R$ 8.270,20"}, {"d": "30/07/2024", "v": "R$ 8.973,07"}, {"d": "31/07/2024", "v": "R$ 9.574,15"}];
+
+const corpo = document.querySelector('#tb tbody');
+let ordem = {k: 'ord_inv', asc: true};
+
+function desenhar() {
+  const q = document.getElementById('filtro').value.toLowerCase().trim();
+  const vis = LINHAS.filter(l =>
+    !q || l.campanha.toLowerCase().includes(q) || l.veiculo.toLowerCase().includes(q));
+  vis.sort((a, b) => {
+    const x = a[ordem.k], y = b[ordem.k];
+    const c = typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR');
+    return ordem.asc ? c : -c;
+  });
+  corpo.innerHTML = vis.map(l => `<tr>
+    <td>${l.campanha}</td><td>${l.veiculo}</td>
+    <td>${l.inv_plan}</td><td>${l.inv_real}</td>
+    <td><span class="pill ${l.status}">${l.pac_inv}</span></td>
+    <td>${l.pac_imp}</td><td>${l.pac_cli}</td></tr>`).join('')
+    || '<tr><td colspan="7">Nenhuma linha para esse filtro.</td></tr>';
+}
+
+document.getElementById('filtro').addEventListener('input', desenhar);
+document.querySelectorAll('#tb th').forEach(th => th.addEventListener('click', () => {
+  const k = th.dataset.k;
+  ordem = {k, asc: ordem.k === k ? !ordem.asc : true};
+  desenhar();
+}));
+desenhar();
+
+// Crosshair e tooltip da serie diaria.
+const tip = document.getElementById('tip');
+document.querySelectorAll('.svg-hover').forEach(svg => {
+  const [ex, ty, pl, pa] = svg.dataset.plot.split(',').map(Number);
+  const cross = svg.querySelector('.crosshair');
+  const foco = svg.querySelector('.foco');
+  const pts = svg.querySelector('polyline').getAttribute('points').split(' ')
+    .map(p => p.split(',').map(Number));
+
+  svg.addEventListener('pointermove', ev => {
+    const cx = svg.getBoundingClientRect();
+    const vb = svg.viewBox.baseVal;
+    const ux = (ev.clientX - cx.left) / cx.width * vb.width;
+    let i = Math.round((ux - ex) / pl * (pts.length - 1));
+    i = Math.max(0, Math.min(pts.length - 1, i));
+    cross.setAttribute('x1', pts[i][0]); cross.setAttribute('x2', pts[i][0]);
+    cross.setAttribute('opacity', '1');
+    foco.setAttribute('cx', pts[i][0]); foco.setAttribute('cy', pts[i][1]);
+    foco.setAttribute('opacity', '1');
+    tip.innerHTML = `<strong>${SERIE[i].d}</strong><br>${SERIE[i].v}`;
+    tip.style.opacity = '1';
+    tip.style.left = Math.min(window.innerWidth - 170, ev.clientX + 14) + 'px';
+    tip.style.top = (ev.clientY - 46) + 'px';
+  });
+  svg.addEventListener('pointerleave', () => {
+    cross.setAttribute('opacity', '0');
+    foco.setAttribute('opacity', '0');
+    tip.style.opacity = '0';
+  });
+});
+</script>
+</body>
+</html>
