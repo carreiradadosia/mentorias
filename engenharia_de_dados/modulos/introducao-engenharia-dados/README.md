@@ -1,8 +1,8 @@
 ---
 title: "Introducao a engenharia de dados e diagnostico"
-date: 2026-07-30
+date: 2026-07-31
 type: modulo
-status: rascunho
+status: publicado
 tags: [introducao, mentoria]
 ---
 
@@ -12,7 +12,7 @@ O ciclo de vida do dado, data product e as metricas que importam.
 
 ## Estado
 
-Status na trilha: **rascunho**. A ordem recomendada vive em `trilha.yml`, na
+Status na trilha: **publicado**. A ordem recomendada vive em `trilha.yml`, na
 raiz da trilha. Seu roteiro pode cursar este modulo em outra posicao.
 
 ## O que tem aqui
